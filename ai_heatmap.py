@@ -44,7 +44,7 @@ print(train_images.shape)
 
 train_data = np.array(train_data)
 print(train_data.shape)
-split_index = int(len(train_data) * 0.3)
+split_index = int(len(train_data) * 0.2)
 
 x_train = train_images[:split_index]
 x_val = train_images[split_index:]
@@ -55,8 +55,8 @@ y_val = train_data[split_index:]
 
 
 print("Length: ", len(train_images))
-model = create_segmentation_model((80, 320, 1))
+model = create_segmentation_model2((80, 320, 1))
 model = compile_model(model)
 early_stopping = EarlyStoppingByLoss(monitor='val_loss', value=0.06, verbose=1)
-model = train(model, x_train, y_train, x_val, y_val, early_stopping, 100)
-model.save("heatmap_model_new/model_101_epochs_9700.h5")
+model = train(model, x_train, y_train, x_val, y_val, None, 14)
+#model.save("heatmap_model_new/model_101_epochs_9700.h5")
