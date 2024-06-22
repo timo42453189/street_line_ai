@@ -29,7 +29,7 @@ class EarlyStoppingByLoss(tf.keras.callbacks.Callback):
                 print(f"\nEpoch {epoch + 1}: early stopping, {self.monitor} is less than {self.value}.")
             self.model.stop_training = True
 
-dir_list = os.listdir("data_storing/heatmap_data")
+dir_list = os.listdir("data_storing/heatmap_data")[10000:]
 print(len(dir_list))
 for file in dir_list:
     a, p = s.read(file)
@@ -44,7 +44,7 @@ print(train_images.shape)
 
 train_data = np.array(train_data)
 print(train_data.shape)
-split_index = int(len(train_data) * 0.2)
+split_index = int(len(train_data) * 0.1)
 
 x_train = train_images[:split_index]
 x_val = train_images[split_index:]
@@ -55,8 +55,9 @@ y_val = train_data[split_index:]
 
 
 print("Length: ", len(train_images))
-model = create_segmentation_model((80, 320, 1))
+#model = create_segmentation_model((80, 320, 1))
+model = tf.keras.models.load_model('use_models/heatmap_model_new/model_101_epochs_9700.h5')
 model = compile_model(model)
-early_stopping = EarlyStoppingByLoss(monitor='val_loss', value=0.03, verbose=1)
+early_stopping = EarlyStoppingByLoss(monitor='val_loss', value=0.055, verbose=1)
 model = train(model, x_train, y_train, x_val, y_val, early_stopping, 100)
-model.save("use_models/heatmap_model_new/model_101_epochs_15200.h5")
+model.save("use_models/heatmap_model_new/model_101_epochs_15200_retrained.h5")

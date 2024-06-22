@@ -4,7 +4,7 @@ import keras.backend as K
 from tensorflow.keras import layers, models, regularizers, callbacks
 
 lr_schedule = tf.keras.optimizers.schedules.PolynomialDecay(
-    initial_learning_rate=0.1,
+    initial_learning_rate=0.01,
     decay_steps=10000,  # Anzahl der Schritte, nach denen die Lernrate reduziert wird
     end_learning_rate=0.0001,  # Endwert der Lernrate
     power=0.5  # Power für den Polynomabfall
