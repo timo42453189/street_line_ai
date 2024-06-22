@@ -23,10 +23,9 @@ def overlay_heatmap_on_image(image, heatmap, alpha=0.5):
     return overlayed_image
 
 
-model = tf.keras.models.load_model('use_models/heatmap_model_old/model_400_epochs.h5')
-model_2 = tf.keras.models.load_model('use_models/heatmap_model_new/model_101_epochs_9700.h5')
+model = tf.keras.models.load_model('use_models/heatmap_model_new/model_101_epochs_9700.h5')
+model_2 = tf.keras.models.load_model('use_models/heatmap_model_new/model_101_epochs_15200.h5')
 images = os.listdir("data_storing/train_images_2")
-images = images[3700:]
 for i in images:
     img, pot = s.read(i)
     image_final = img[tf.newaxis,:,:]
@@ -34,14 +33,13 @@ for i in images:
     predicted_heatmap_1 = model.predict(image_final/255)
     predicted_heatmap_1 = np.squeeze(predicted_heatmap_1, axis=0)
     overlay_1 = overlay_heatmap_on_image(img, predicted_heatmap_1)
-    cv2.imshow("image", predicted_heatmap_1)
+    cv2.imshow("old", overlay_1)
     cv2.waitKey(0)
 
     predicted_heatmap_2 = model_2.predict(image_final/255)
     predicted_heatmap_2 = np.squeeze(predicted_heatmap_2, axis=0)
-    predicted_heatmap_2[predicted_heatmap_2 > 0.02] = 1
-    predicted_heatmap_2[predicted_heatmap_2 < 0.02] = 0
 
     overlay_2 = overlay_heatmap_on_image(img, predicted_heatmap_2)
-    cv2.imshow("image", predicted_heatmap_2)
+    cv2.imshow("new", overlay_2)
     cv2.waitKey(0)
+    cv2.destroyAllWindows()

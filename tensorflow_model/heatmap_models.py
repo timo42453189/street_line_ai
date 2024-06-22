@@ -112,5 +112,5 @@ def compile_model(model):
         return model
     
 def train(model, x_train, y_train, x_val, y_val, early_stopping, epochs):
-        model.fit(x_train, y_train, validation_data=(x_val, y_val), batch_size=64, shuffle=True, callbacks=[], epochs=epochs)
+        model.fit(x_train, y_train, validation_data=(x_val, y_val), batch_size=64, shuffle=True, callbacks=[early_stopping], epochs=epochs)
         return model
