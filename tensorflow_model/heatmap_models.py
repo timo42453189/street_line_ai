@@ -10,8 +10,6 @@ lr_schedule = tf.keras.optimizers.schedules.PolynomialDecay(
     power=0.5  # Power für den Polynomabfall
 )
 
-reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=1e-6)
-
 def create_segmentation_model(input_shape):
     model = models.Sequential()
     
@@ -174,11 +172,11 @@ def unet_model(input_shape):
     return model
 
 def compile_model(model):
-        opt = tf.keras.optimizers.Adam(learning_rate=0.01)
+        opt = tf.keras.optimizers.Adam(learning_rate=0.001)
         print("Using Learning Rate Sceduler")
         model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-def train(model, x_train, y_train, x_val, y_val, early_stopping, epochs):
-        model.fit(x_train, y_train, validation_data=(x_val, y_val), batch_size=32, shuffle=True, callbacks=[early_stopping, reduce_lr], epochs=epochs)
+def train(model, x_train, y_train, x_val, y_val, epochs):
+        model.fit(x_train, y_train, validation_data=(x_val, y_val), batch_size=64, shuffle=True, callbacks=[], epochs=epochs)
         return model
