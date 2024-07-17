@@ -7,7 +7,7 @@ import serial
 import time
 c = Cam(index=[1])
 
-ser = serial.Serial("COM7", 9600)
+ser = serial.Serial("COM7", 115200)
 time.sleep(3)
 def overlay_heatmap_on_image(image, heatmap, alpha=0.5):
     heatmap = np.uint8(255 * heatmap)
@@ -26,8 +26,12 @@ def overlay_heatmap_on_image(image, heatmap, alpha=0.5):
     return overlayed_image
 
 def sigmoid_scaled(x, scale=10, midpoint=300, steepness=100):
-    return scale / (1 + np.exp(-(x - midpoint) / steepness))
-model = tf.keras.models.load_model('heatmap_model_new/model_100_epochs_9700.h5')
+    #return scale / (1 + np.exp(-(x - midpoint) / steepness))
+    #return x/6
+    return 0.08*x
+
+
+model = tf.keras.models.load_model('heatmap_model_new/model_101_epochs_15200_retrained.h5')
 
 while True:
     image = c.get_frame()
@@ -60,7 +64,6 @@ while True:
     for x in rectangles[:]:
         area = (x[2]-x[0])*(x[3]-x[1])
         if area < 0:
-            print("removed")
             image = cv2.rectangle(image, (x[0], x[1]), (x[2], x[3]), color=(0, 0, 0), thickness=-1)
             rectangles.remove(x)
         else:
@@ -73,7 +76,6 @@ while True:
         image = cv2.rectangle(image, (rectangles[lowest_index][0], rectangles[lowest_index][1]), (rectangles[lowest_index][2], rectangles[lowest_index][3]), color=(0, 0, 0), thickness=-1)
         rectangle_area.pop(lowest_index)
         rectangles.pop(lowest_index)
-        print("popped")
 
     image_height, image_width = gray.shape
     white_points = []
@@ -86,59 +88,61 @@ while True:
                 white_points.append((x, y))
 
     white_points = np.array(white_points)
-
-    if len(white_points) < 2:
-        print("Not enough white points detected in the image to fit a line.")
-    else:
-        if lines > 1:
-            mid_x = rectangles[0][2]
-            line1_points = white_points[white_points[:, 0] < mid_x]
-            line2_points = white_points[white_points[:, 0] >= mid_x]
-            y_values = np.arange(0, image_height)
-            line1_fit = np.polyfit(line1_points[:, 1], line1_points[:, 0], 1)
-            line1_func = np.poly1d(line1_fit)
-            line1_x_values = line1_func(y_values)
-            line2_fit = np.polyfit(line2_points[:, 1], line2_points[:, 0], 1)
-            line2_func = np.poly1d(line2_fit)
-            line2_x_values = line2_func(y_values)
-            a1, b1 = line1_fit
-            a2, b2 = line2_fit
-            y_intersect = (b2 - b1) / (a1 - a2)
-            x_intersect = a1 * y_intersect + b1
-            line_1_0 = (0-b1)/a1
-            line_2_0 = (image_width-b2)/a2
-            direction = 10
-            if line_2_0 < line_1_0:
-                # Right
-                print("r_2")
-                direction = int(10-sigmoid_scaled(line_1_0-line_2_0)**2)
-                print(direction)
-                if direction > 20:
-                    direction = 20
-            else:
-                # Left
-                print("l_2")
-                print(line_2_0-line_1_0)
-                direction = 10+int(sigmoid_scaled(line_2_0-line_1_0)**2)
-                print(direction)
-                if direction < 0:
-                    direction = 0
-
-
-            ser.write(str(direction).encode())
-            time.sleep(1)
+    try:
+        if len(white_points) < 2:
+            print("Not enough white points detected in the image to fit a line.")
         else:
-            y_values = np.arange(0, image_height)
-            line1_fit = np.polyfit(white_points[:, 1], white_points[:, 0], 1)
-            line1_func = np.poly1d(line1_fit)
-            line1_x_values = line1_func(y_values)
-            a1, b1 = line1_fit
-            direction = 10
-            if a1 > 0:
-                print("l_1")
-                direction = 19
+            if lines > 1:
+                mid_x = rectangles[0][2]
+                line1_points = white_points[white_points[:, 0] < mid_x]
+                line2_points = white_points[white_points[:, 0] >= mid_x]
+                y_values = np.arange(0, image_height)
+                line1_fit = np.polyfit(line1_points[:, 1], line1_points[:, 0], 1)
+                line1_func = np.poly1d(line1_fit)
+                line1_x_values = line1_func(y_values)
+                line2_fit = np.polyfit(line2_points[:, 1], line2_points[:, 0], 1)
+                line2_func = np.poly1d(line2_fit)
+                line2_x_values = line2_func(y_values)
+                a1, b1 = line1_fit
+                a2, b2 = line2_fit
+                y_intersect = (b2 - b1) / (a1 - a2)
+                x_intersect = a1 * y_intersect + b1
+                line_1_0 = (0-b1)/a1
+                line_2_0 = (image_width-b2)/a2
+                direction = 10
+                if line_2_0 < line_1_0:
+                    # Right
+                    print("r_2")
+                    x = line_1_0-line_2_0
+                    if x > 150:
+                        print("ERR")
+                    else:
+                        direction = 10-int(sigmoid_scaled(x))
+                        print(direction)
+                    if direction < 0:
+                        direction = 0
+                else:
+                    # Left
+                    print("l_2")
+                    direction = 12+int(sigmoid_scaled(line_2_0-line_1_0))
+                    print(direction)
+                    if direction > 20:
+                        direction = 20
+
+                ser.write(str(direction).encode())
             else:
-                print("r_1")
-                direction = 0
-            ser.write(str(direction).encode())
-            time.sleep(1)
+                y_values = np.arange(0, image_height)
+                line1_fit = np.polyfit(white_points[:, 1], white_points[:, 0], 1)
+                line1_func = np.poly1d(line1_fit)
+                line1_x_values = line1_func(y_values)
+                a1, b1 = line1_fit
+                direction = 10
+                if a1 > 0:
+                    print("l_1")
+                    direction = 19
+                else:
+                    print("r_1")
+                    direction = 0
+                ser.write(str(direction).encode())
+    except:
+        print("ERROR")
