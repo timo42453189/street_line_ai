@@ -46,13 +46,12 @@ train_data = np.array(train_data)
 print(train_data.shape)
 split_index = int(len(train_data) * 0.1)
 
-x_train = train_images[:split_index]
-x_val = train_images[split_index:]
+x_val = train_images[:split_index]
+x_train = train_images[split_index:]
 
-y_train = train_data[:split_index]
-y_val = train_data[split_index:]
-
-
+y_val = train_data[:split_index]
+y_train = train_data[split_index:]
+print("Len", len(x_val))
 
 print("Length: ", len(train_images))
 model = unet_model((80, 320, 1))
@@ -60,4 +59,4 @@ model = unet_model((80, 320, 1))
 model = compile_model(model)
 #early_stopping = EarlyStoppingByLoss(monitor='val_loss', value=0.055, verbose=1)
 model = train(model, x_train, y_train, x_val, y_val, 15)
-model.save("use_models/heatmap_model_new/model_15_epochs_19000.h5")
+model.save("use_models/heatmap_model_new/model_15_epochs_19000_0.h5")

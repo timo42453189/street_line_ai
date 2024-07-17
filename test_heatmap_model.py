@@ -24,7 +24,7 @@ def overlay_heatmap_on_image(image, heatmap, alpha=0.5):
 
 
 model_2 = tf.keras.models.load_model('use_models/heatmap_model_new/model_15_epochs_19000.h5')
-model = tf.keras.models.load_model('use_models/heatmap_model_new/model_101_epochs_15200.h5')
+model = tf.keras.models.load_model('use_models/heatmap_model_new/model_100_epochs_5000.h5')
 images = os.listdir("data_storing/train_images_2")
 for i in images:
     img, pot = s.read(i)
