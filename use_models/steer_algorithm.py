@@ -76,6 +76,21 @@ while True:
         image = cv2.rectangle(image, (rectangles[lowest_index][0], rectangles[lowest_index][1]), (rectangles[lowest_index][2], rectangles[lowest_index][3]), color=(0, 0, 0), thickness=-1)
         rectangle_area.pop(lowest_index)
         rectangles.pop(lowest_index)
+        
+    if len(lines) == 1:
+        height, width = gray.shape
+        highest_point_row = -1
+        highest_point_col = -1
+        for row in range(height):
+            if np.max(image[row, :]) > 0:
+                highest_point_row = row
+                highest_point_col = np.argmax(image[row, :])
+                break
+        block_width = 10
+        if highest_point_row != -1 and highest_point_col != -1:
+            start_col = max(0, highest_point_col - block_width // 2)
+            end_col = min(width, highest_point_col + block_width // 2)
+            image[highest_point_row:, start_col:end_col] = 0
 
     image_height, image_width = gray.shape
     white_points = []
