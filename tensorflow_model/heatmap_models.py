@@ -5,9 +5,9 @@ from tensorflow.keras import layers, models, regularizers, callbacks
 
 lr_schedule = tf.keras.optimizers.schedules.PolynomialDecay(
     initial_learning_rate=0.01,
-    decay_steps=10000,  # Anzahl der Schritte, nach denen die Lernrate reduziert wird
-    end_learning_rate=0.0001,  # Endwert der Lernrate
-    power=0.5  # Power für den Polynomabfall
+    decay_steps=2385*2,
+    end_learning_rate=1e-5,
+    power=1.0
 )
 
 def swish(x):
@@ -183,6 +183,6 @@ def compile_model(model):
         model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-def train(model, x_train, y_train, x_val, y_val, epochs):
-        model.fit(x_train, y_train, validation_data=(x_val, y_val), batch_size=32, shuffle=True, callbacks=[], epochs=epochs)
+def train(model, x_train, y_train, x_val, y_val, epochs, earlystop):
+        model.fit(x_train, y_train, validation_data=(x_val, y_val), batch_size=32, shuffle=True, callbacks=[earlystop], epochs=epochs)
         return model
